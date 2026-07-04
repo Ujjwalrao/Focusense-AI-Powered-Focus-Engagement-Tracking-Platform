@@ -9,14 +9,7 @@ django-cors-headers==4.4.0   # allows the React (Vercel) frontend to call this A
 psycopg2-binary==2.9.9
 dj-database-url==2.2.0
 
-# ===== AI Engine (OPTIONAL — only needed for legacy/offline deep-analysis mode) =====
-# Live tracking ab client-side Human.js se hoti hai (zero server AI load).
-# Yeh 3 packages sirf tab install karo agar tracker/ai_engine/*.py wala
-# server-side pipeline reuse karna hai (e.g. pre-recorded video upload analysis).
-tensorflow-cpu==2.16.1
-opencv-python-headless==4.10.0.84
-mediapipe==0.10.14
-numpy==1.26.4
+
 
 # ===== Reporting =====
 reportlab==4.2.0             # generates PDF session reports
