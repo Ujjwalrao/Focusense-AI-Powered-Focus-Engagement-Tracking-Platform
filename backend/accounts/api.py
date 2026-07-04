@@ -5,10 +5,11 @@ React frontend (Vercel) ke liye JSON API — purane `views.py` wale
 template-based login/signup se ALAG hai (woh legacy Django-template
 frontend ke liye reserved hain, dono saath-saath chal sakte hain).
 
-CSRF handling: Django ka CSRF protection POST requests pe cookie +
-header dono match karwata hai. React pehle GET /api/auth/csrf/ call
-karke cookie le leta hai, phir uska value 'X-CSRFToken' header me
-bhejta hai — yeh Django ka standard AJAX CSRF pattern hai.
+CSRF handling: React aur Django alag domains (Vercel vs Render) pe
+hain, isliye browser JS backend ki csrftoken cookie read nahi kar
+sakta (cross-domain cookie restriction) — isliye yeh 3 POST endpoints
+csrf_exempt hain. Yeh safe hai kyunki CORS_ALLOWED_ORIGINS whitelist
+already control karti hai ki kaunse domains se requests accept hongi.
 """
 
 import json
@@ -17,7 +18,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.middleware.csrf import get_token
-from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
 from django.views.decorators.http import require_http_methods
 
 
@@ -38,6 +39,7 @@ def me(request):
     return JsonResponse({"authenticated": False})
 
 
+@csrf_exempt
 @require_http_methods(["POST"])
 def api_signup(request):
     try:
@@ -60,6 +62,7 @@ def api_signup(request):
     return JsonResponse({"authenticated": True, "username": user.username}, status=201)
 
 
+@csrf_exempt
 @require_http_methods(["POST"])
 def api_login(request):
     try:
@@ -75,6 +78,7 @@ def api_login(request):
     return JsonResponse({"authenticated": True, "username": user.username})
 
 
+@csrf_exempt
 @require_http_methods(["POST"])
 def api_logout(request):
     logout(request)
