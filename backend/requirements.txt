@@ -1,0 +1,29 @@
+# ===== Core Backend =====
+Django==5.0.6
+channels==4.1.0
+channels-redis==4.2.0        # production channel layer (free Redis on Upstash/Render)
+daphne==4.1.2                # ASGI server that actually serves WebSockets
+django-cors-headers==4.4.0   # allows the React (Vercel) frontend to call this API cross-domain
+
+# ===== Database (Supabase Postgres, free tier) =====
+psycopg2-binary==2.9.9
+dj-database-url==2.2.0
+
+# ===== AI Engine (OPTIONAL — only needed for legacy/offline deep-analysis mode) =====
+# Live tracking ab client-side Human.js se hoti hai (zero server AI load).
+# Yeh 3 packages sirf tab install karo agar tracker/ai_engine/*.py wala
+# server-side pipeline reuse karna hai (e.g. pre-recorded video upload analysis).
+tensorflow-cpu==2.16.1
+opencv-python-headless==4.10.0.84
+mediapipe==0.10.14
+numpy==1.26.4
+
+# ===== Reporting =====
+reportlab==4.2.0             # generates PDF session reports
+Pillow==10.3.0
+pdf2image==1.17.0            # optional: only needed if you preview PDFs as images in admin/tests
+
+# ===== Utilities =====
+python-dotenv==1.0.1
+gunicorn==22.0.0             # fallback WSGI for non-websocket routes if needed
+whitenoise==6.6.0            # serves static files free, no S3 needed

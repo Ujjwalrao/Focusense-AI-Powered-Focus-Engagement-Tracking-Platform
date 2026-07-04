@@ -1,0 +1,52 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}Focusense{% endblock %}</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+
+<style>
+  /* ── Global design tokens — same palette across every page ───────────── */
+  :root {
+    --bg: #0B1120; --bg-soft: #0F172A;
+    --glass: rgba(255,255,255,0.055); --glass-border: rgba(255,255,255,0.09);
+    --text: #E2E8F0; --text-dim: #8291AB;
+    --teal: #2DD4BF; --violet: #8B5CF6; --amber: #FBBF24; --rose: #FB7185;
+  }
+  html.light {
+    --bg: #F1F5F9; --bg-soft: #E2E8F0;
+    --glass: rgba(255,255,255,0.65); --glass-border: rgba(15,23,42,0.08);
+    --text: #0F172A; --text-dim: #55627A;
+  }
+  body { background: var(--bg); color: var(--text); font-family:'Inter',sans-serif; transition:.4s ease; }
+  .display { font-family:'Space Grotesk',sans-serif; }
+  .mono { font-family:'JetBrains Mono',monospace; }
+  .glass { background: var(--glass); border:1px solid var(--glass-border); backdrop-filter: blur(18px); border-radius:18px; }
+</style>
+{% block extra_head %}{% endblock %}
+</head>
+<body class="min-h-screen">
+  <div class="max-w-7xl mx-auto p-6">
+    {% block content %}{% endblock %}
+  </div>
+
+<script>
+  // Theme preference localStorage me save hoti hai — real app hai,
+  // browser storage yahan perfectly fine hai (artifact preview me nahi tha).
+  (function() {
+    const saved = localStorage.getItem("focusense-theme");
+    if (saved === "light") document.documentElement.classList.add("light");
+  })();
+  function toggleTheme() {
+    document.documentElement.classList.toggle("light");
+    localStorage.setItem("focusense-theme", document.documentElement.classList.contains("light") ? "light" : "dark");
+  }
+</script>
+{% block extra_scripts %}{% endblock %}
+</body>
+</html>

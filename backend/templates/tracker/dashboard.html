@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Dashboard — Focusense{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+  <div class="flex items-center gap-2">
+    <span class="w-2.5 h-2.5 rounded-full" style="background:var(--teal); box-shadow:0 0 12px var(--teal);"></span>
+    <span class="display text-xl font-bold">Focusense</span>
+    <span class="text-[10px] px-2 py-1 rounded-full glass text-gray-400 ml-2">{{ request.user.username }}</span>
+  </div>
+  <div class="flex items-center gap-4">
+    <button id="startBtn" onclick="startTracking()"
+      class="text-sm px-4 py-2 rounded-full font-medium" style="background:var(--teal); color:#0B1120;">
+      Start Session
+    </button>
+    <div class="w-[52px] h-7 rounded-full glass relative cursor-pointer" onclick="toggleTheme()">
+      <div class="absolute top-[3px] left-[3px] w-5 h-5 rounded-full" style="background:var(--teal);"></div>
+    </div>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-[1.3fr_1fr] gap-5">
+
+  <!-- Live feed card -->
+  <div class="glass p-5">
+    <div class="flex justify-between items-center mb-3">
+      <span class="text-sm font-semibold">Live Feed</span>
+      <div class="flex items-center gap-2">
+        <span id="ageBadge" class="text-[11px] px-2 py-1 rounded-full glass text-gray-400">Age —</span>
+        <span id="genderBadge" class="text-[11px] px-2 py-1 rounded-full glass text-gray-400">—</span>
+        <span id="liveBadge" class="text-[11px] px-2 py-1 rounded-full glass text-gray-400">Liveness —</span>
+        <span id="statusBadge" class="text-[11px] px-2 py-1 rounded-full glass text-gray-400">Idle</span>
+      </div>
+    </div>
+
+    <div class="relative rounded-2xl overflow-hidden" style="aspect-ratio:16/10; background:var(--bg-soft); border:1px solid var(--glass-border);">
+      <!-- Actual webcam feed -->
+      <video id="webcamFeed" class="w-full h-full object-cover" autoplay muted playsinline></video>
+
+      <!-- Pulse ring overlay, same SVG trick as the Step-3 preview -->
+      <svg class="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 200 200">
+        <circle cx="100" cy="100" r="86" fill="none" stroke="var(--glass-border)" stroke-width="2"/>
+        <circle id="pulseRing" cx="100" cy="100" r="86" fill="none" stroke="var(--teal)" stroke-width="2.5"
+                stroke-linecap="round" stroke-dasharray="540" stroke-dashoffset="540"
+                transform="rotate(-90 100 100)" style="transition: stroke-dashoffset .5s ease;"/>
+      </svg>
+    </div>
+
+    <!-- Emotion bars — data-emo attributes match tracker-client.js selectors -->
+    <div class="mt-4 space-y-2">
+      {% for emo in emotions %}
+      <div class="flex items-center gap-2" data-emo="{{ emo }}">
+        <span class="w-16 text-xs text-gray-400">{{ emo }}</span>
+        <div class="flex-1 h-1.5 rounded-full" style="background:var(--glass-border);">
+          <div class="emo-fill h-full rounded-full" style="width:0%; background:var(--teal); transition:width .6s ease;"></div>
+        </div>
+        <span class="emo-pct w-9 text-right text-xs mono">0%</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Stats + alerts -->
+  <div class="space-y-5">
+    <div class="glass p-5">
+      <div class="text-sm font-semibold mb-3">Engagement Timeline</div>
+      <canvas id="lineChart" style="height:150px;"></canvas>
+    </div>
+    <div class="glass p-5">
+      <div class="text-sm font-semibold mb-3">Smart Alerts</div>
+      <div id="alertContainer" class="space-y-2 text-sm text-gray-400">No alerts yet — session shuru karo.</div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@vladmandic/human/dist/human.min.js"></script>
+<script src="{% static 'js/human-tracker-client.js' %}"></script>
+<script>
+  // Django backend se generate hua unique session id — WebSocket path me jaayega
+  const SESSION_ID = "{{ session_id }}";
+  let client = null;
+  let chart = null;
+
+  function initChart() {
+    const ctx = document.getElementById("lineChart");
+    chart = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: Array(20).fill(""),
+        datasets: [{ data: Array(20).fill(0), borderColor: "#2DD4BF",
+          backgroundColor: "rgba(45,212,191,0.08)", fill: true, tension: 0.4, pointRadius: 0, borderWidth: 2 }]
+      },
+      options: { responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display:false } },
+        scales: { x: { display:false }, y: { min:0, max:100, ticks:{ color:"#8291AB" }, grid:{ color:"rgba(130,145,171,.1)" } } } }
+    });
+  }
+
+  async function startTracking() {
+    document.getElementById("statusBadge").textContent = "Loading AI models...";
+    initChart();
+
+    client = new HumanTrackerClient({
+      sessionId: SESSION_ID,
+      videoEl: document.getElementById("webcamFeed"),
+      wsScheme: window.location.protocol === "https:" ? "wss" : "ws",
+    });
+
+    bindHumanTrackerToDashboard(client, chart);
+
+    try {
+      await client.start();
+      document.getElementById("statusBadge").textContent = "Analyzing (on-device)";
+      document.getElementById("startBtn").textContent = "Stop Session";
+      document.getElementById("startBtn").onclick = stopTracking;
+    } catch (err) {
+      console.error(err);
+      document.getElementById("statusBadge").textContent = "Camera blocked";
+      alert("Webcam access chahiye tracking ke liye. Browser permission allow karo aur retry karo.");
+    }
+  }
+
+  function stopTracking() {
+    if (client) client.stop();
+    document.getElementById("statusBadge").textContent = "Idle";
+    document.getElementById("startBtn").textContent = "Start Session";
+    document.getElementById("startBtn").onclick = startTracking;
+  }
+</script>
+{% endblock %}

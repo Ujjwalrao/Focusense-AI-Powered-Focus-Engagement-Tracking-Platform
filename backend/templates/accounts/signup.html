@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Sign Up — Focusense{% endblock %}
+{% block content %}
+<div class="min-h-[85vh] flex items-center justify-center">
+  <div class="glass p-8 w-full max-w-sm">
+    <div class="text-center mb-6">
+      <span class="display text-2xl font-bold">Focusense</span>
+      <p class="text-sm text-gray-400 mt-1">Create your free account</p>
+    </div>
+
+    <form method="post">
+      {% csrf_token %}
+      {% for field in form %}
+      <div class="mb-4">
+        <label class="text-xs text-gray-400">{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}<p class="text-xs" style="color:var(--rose);">{{ field.errors.0 }}</p>{% endif %}
+      </div>
+      {% endfor %}
+      <button type="submit" class="w-full py-2.5 rounded-xl font-medium mt-2" style="background:var(--teal); color:#0B1120;">
+        Sign up
+      </button>
+    </form>
+
+    <p class="text-center text-xs text-gray-400 mt-5">
+      Already have an account? <a href="{% url 'accounts:login' %}" style="color:var(--teal);">Log in</a>
+    </p>
+  </div>
+</div>
+
+<style>
+  input { width:100%; background:var(--bg-soft); border:1px solid var(--glass-border); border-radius:10px;
+          padding:9px 12px; color:var(--text); font-size:14px; margin-top:4px; }
+</style>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}History — Focusense{% endblock %}
+{% block content %}
+<div class="mb-6">
+  <span class="display text-xl font-bold">Session History</span>
+</div>
+
+<div class="glass p-2">
+  <table class="w-full text-sm">
+    <thead>
+      <tr class="text-left text-xs text-gray-400 uppercase">
+        <th class="p-3">Date</th>
+        <th class="p-3">Duration</th>
+        <th class="p-3">Avg Engagement</th>
+        <th class="p-3">Dominant Emotion</th>
+        <th class="p-3">Distractions</th>
+        <th class="p-3">Report</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in sessions %}
+      <tr class="border-t" style="border-color:var(--glass-border);">
+        <td class="p-3">{{ s.started_at|date:"d M Y, H:i" }}</td>
+        <td class="p-3 mono">{{ s.duration_display }}</td>
+        <td class="p-3 mono">{{ s.avg_engagement_score }}%</td>
+        <td class="p-3">{{ s.dominant_emotion|default:"—" }}</td>
+        <td class="p-3 mono">{{ s.distraction_count }}</td>
+        <td class="p-3">
+          {% if s.total_frames_analyzed %}
+            <a href="{% url 'tracker:download_report' s.id %}" style="color:var(--teal);">Download</a>
+          {% else %}
+            <span class="text-gray-500">—</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td class="p-4 text-gray-400" colspan="6">Koi session nahi mila abhi tak. Dashboard se ek start karo.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

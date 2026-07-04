@@ -1,0 +1,10 @@
+# Render/Railway dono is file ko samajhte hain.
+# "release" phase = deploy se pehle ek baar chalta hai (migrations).
+# "web" phase = actual server jo requests serve karta hai.
+#
+# IMPORTANT: `daphne` use kar rahe hain, `gunicorn` NAHI — gunicorn WSGI
+# hai aur WebSockets support nahi karta. Daphne ASGI server hai, isi se
+# Channels/WebSocket connections kaam karenge.
+
+release: python manage.py migrate --noinput
+web: daphne -b 0.0.0.0 -p $PORT core.asgi:application

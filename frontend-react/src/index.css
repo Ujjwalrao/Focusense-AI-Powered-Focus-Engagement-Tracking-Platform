@@ -1,0 +1,64 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  background: #101216;
+  color: #EEEBE3;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* Subtle oscilloscope-grid texture — the instrument-panel backdrop.
+   Very low opacity so it reads as texture, not decoration. */
+.grid-texture {
+  background-image:
+    linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
+  background-size: 42px 42px;
+}
+
+.font-display { font-family: 'Instrument Serif', serif; }
+.font-mono-ui { font-family: 'IBM Plex Mono', monospace; }
+
+/* Channel label — small caps instrument-panel tag, used ONLY for the
+   4 real simultaneous signal channels (emotion/attention/identity/liveness) */
+.channel-tag {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+::selection { background: rgba(255,176,32,0.3); color: #fff; }
+
+/* Respect reduced-motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Visible keyboard focus, instrument-style */
+a:focus-visible, button:focus-visible, input:focus-visible {
+  outline: 2px solid #FFB020;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-track { background: #101216; }
+::-webkit-scrollbar-thumb { background: #2A2E36; border-radius: 6px; }
